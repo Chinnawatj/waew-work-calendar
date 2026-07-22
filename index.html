@@ -419,10 +419,11 @@
     return '฿' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
   }
   function roundNum(n) { return Math.round((n || 0) * 100) / 100; }
-  function entryIncome(entry, rate) {
+  function entryIncome(entry, fallbackRate) {
     if (!entry) return 0;
     if (entry.mode === 'fixed') return entry.amount || 0;
-    return (entry.times || 0) * (rate || 0);
+    const r = (typeof entry.rate === 'number') ? entry.rate : (fallbackRate || 0);
+    return (entry.times || 0) * r;
   }
 
   const rateInput = document.getElementById('rateInput');
@@ -481,7 +482,7 @@
   document.querySelectorAll('.panel-buttons button[data-times]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       const t = parseInt(btn.getAttribute('data-times'), 10);
-      state.entries[selectedDate] = { mode: 'times', times: t };
+      state.entries[selectedDate] = { mode: 'times', times: t, rate: state.rate || 0 };
       saveState();
       renderAll();
     });
@@ -489,7 +490,7 @@
   document.getElementById('customApply').addEventListener('click', function() {
     const v = parseFloat(customTimes.value);
     if (!isNaN(v) && v > 0) {
-      state.entries[selectedDate] = { mode: 'times', times: v };
+      state.entries[selectedDate] = { mode: 'times', times: v, rate: state.rate || 0 };
       saveState();
       customTimes.value = '';
       renderAll();
@@ -603,7 +604,8 @@
         const income = entryIncome(e, rate);
         const d = new Date(k + 'T00:00:00');
         const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const tagText = e.mode === 'fixed' ? 'Fixed day' : (e.times + ' times');
+        const usedRate = (typeof e.rate === 'number') ? e.rate : rate;
+        const tagText = e.mode === 'fixed' ? 'Fixed day' : (e.times + ' times @ ฿' + usedRate);
         const tagClass = e.mode === 'fixed' ? 'entry-times fixed-tag' : 'entry-times';
         const row = document.createElement('div');
         row.className = 'entry-row';
