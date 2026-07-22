@@ -197,7 +197,66 @@
     font-weight: 700;
   }
   .month-nav button:active { transform: scale(0.94); }
-  .month-title { font-size: 16px; font-weight: 700; }
+  .month-title {
+    font-size: 16px;
+    font-weight: 700;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .month-title:active { background: var(--accent-light); }
+
+  .month-popup {
+    position: relative;
+    background: #fbfaff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    margin: -4px 0 12px;
+  }
+  .popup-year-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .popup-year-row button {
+    background: var(--accent-light);
+    border: none;
+    color: var(--accent);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .popup-year-label { font-size: 14px; font-weight: 700; }
+  .popup-month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .popup-month-grid button {
+    padding: 8px 4px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .popup-month-grid button.current {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: white;
+  }
 
   .weekdays, .days-grid {
     display: grid;
@@ -247,7 +306,7 @@
 
   .summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
   .summary-item {
@@ -260,6 +319,18 @@
   .summary-item.income .val { color: #16a34a; }
   .summary-item.income { background: var(--green-light); }
   .summary-item .lbl { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+  .year-income-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-light), var(--green-light));
+  }
+  .year-income-label { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+  .year-income-val { font-size: 18px; font-weight: 800; color: #16a34a; }
 
   .list-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--muted); }
   .entry-row {
@@ -313,13 +384,8 @@
     </div>
 
     <div class="mode-panel active" id="panelTimes">
-      <div class="panel-buttons">
-        <button data-times="2">2 times</button>
-        <button data-times="3">3 times</button>
-        <button data-times="4">4 times</button>
-      </div>
       <div class="custom-row">
-        <input type="number" id="customTimes" min="0" step="0.5" placeholder="e.g. 7.5" />
+        <input type="number" id="customTimes" min="0" step="0.5" placeholder="Times" />
         <button id="customApply">Set</button>
       </div>
     </div>
@@ -338,8 +404,16 @@
   <div class="card">
     <div class="month-nav">
       <button id="prevBtn">‹</button>
-      <div class="month-title" id="monthTitle"></div>
+      <button class="month-title" id="monthTitle"></button>
       <button id="nextBtn">›</button>
+    </div>
+    <div class="month-popup" id="monthPopup" style="display:none;">
+      <div class="popup-year-row">
+        <button id="popupPrevYear">‹</button>
+        <span class="popup-year-label" id="popupYearLabel"></span>
+        <button id="popupNextYear">›</button>
+      </div>
+      <div class="popup-month-grid" id="popupMonthGrid"></div>
     </div>
     <div class="weekdays">
       <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
@@ -357,14 +431,14 @@
         <div class="val" id="sumDays">0</div>
         <div class="lbl">Days Worked</div>
       </div>
-      <div class="summary-item">
-        <div class="val" id="sumTimes">0</div>
-        <div class="lbl">Total Times</div>
-      </div>
       <div class="summary-item income">
         <div class="val" id="sumIncome">฿0</div>
         <div class="lbl">Month Income</div>
       </div>
+    </div>
+    <div class="year-income-row">
+      <span class="year-income-label">Total income in <span id="yearLabel"></span></span>
+      <span class="year-income-val" id="yearIncomeVal">฿0</span>
     </div>
   </div>
 
@@ -434,13 +508,18 @@
   const panelTimes = document.getElementById('panelTimes');
   const panelFixed = document.getElementById('panelFixed');
   const monthTitle = document.getElementById('monthTitle');
+  const monthPopup = document.getElementById('monthPopup');
+  const popupYearLabel = document.getElementById('popupYearLabel');
+  const popupMonthGrid = document.getElementById('popupMonthGrid');
+  let popupYear = viewYear;
   const daysGrid = document.getElementById('daysGrid');
   const customTimes = document.getElementById('customTimes');
   const fixedAmount = document.getElementById('fixedAmount');
   const entryList = document.getElementById('entryList');
   const sumDays = document.getElementById('sumDays');
-  const sumTimes = document.getElementById('sumTimes');
   const sumIncome = document.getElementById('sumIncome');
+  const yearLabel = document.getElementById('yearLabel');
+  const yearIncomeVal = document.getElementById('yearIncomeVal');
 
   rateInput.value = state.rate || '';
   rateInput.addEventListener('input', function() {
@@ -471,22 +550,55 @@
   document.getElementById('prevBtn').addEventListener('click', function() {
     viewMonth--;
     if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    monthPopup.style.display = 'none';
     renderCalendar();
   });
   document.getElementById('nextBtn').addEventListener('click', function() {
     viewMonth++;
     if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    monthPopup.style.display = 'none';
     renderCalendar();
   });
-
-  document.querySelectorAll('.panel-buttons button[data-times]').forEach(function(btn) {
+  const monthNamesShortPopup = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  popupMonthGrid.innerHTML = monthNamesShortPopup.map(function(name, idx) {
+    return '<button data-month="' + idx + '">' + name + '</button>';
+  }).join('');
+  popupMonthGrid.querySelectorAll('button[data-month]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      const t = parseInt(btn.getAttribute('data-times'), 10);
-      state.entries[selectedDate] = { mode: 'times', times: t, rate: state.rate || 0 };
-      saveState();
-      renderAll();
+      viewMonth = parseInt(btn.getAttribute('data-month'), 10);
+      viewYear = popupYear;
+      monthPopup.style.display = 'none';
+      renderCalendar();
     });
   });
+
+  function renderPopup() {
+    popupYearLabel.textContent = popupYear;
+    popupMonthGrid.querySelectorAll('button[data-month]').forEach(function(btn) {
+      const m = parseInt(btn.getAttribute('data-month'), 10);
+      btn.classList.toggle('current', popupYear === viewYear && m === viewMonth);
+    });
+  }
+
+  monthTitle.addEventListener('click', function() {
+    const isOpen = monthPopup.style.display !== 'none';
+    if (isOpen) {
+      monthPopup.style.display = 'none';
+    } else {
+      popupYear = viewYear;
+      renderPopup();
+      monthPopup.style.display = 'block';
+    }
+  });
+  document.getElementById('popupPrevYear').addEventListener('click', function() {
+    popupYear--;
+    renderPopup();
+  });
+  document.getElementById('popupNextYear').addEventListener('click', function() {
+    popupYear++;
+    renderPopup();
+  });
+
   document.getElementById('customApply').addEventListener('click', function() {
     const v = parseFloat(customTimes.value);
     if (!isNaN(v) && v > 0) {
@@ -529,17 +641,13 @@
     panelTimes.classList.toggle('active', activeMode === 'times');
     panelFixed.classList.toggle('active', activeMode === 'fixed');
 
-    document.querySelectorAll('.panel-buttons button[data-times]').forEach(function(btn) {
-      const isActive = entry && entry.mode === 'times' && parseInt(btn.getAttribute('data-times'), 10) === entry.times;
-      btn.classList.toggle('active', isActive);
-    });
     fixedAmount.value = (entry && entry.mode === 'fixed') ? entry.amount : '';
-    customTimes.value = '';
+    customTimes.value = (entry && entry.mode === 'times') ? entry.times : '';
   }
 
   function renderCalendar() {
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    monthTitle.textContent = monthNames[viewMonth] + ' ' + viewYear;
+    monthTitle.textContent = monthNames[viewMonth] + ' ' + viewYear + ' ▾';
 
     daysGrid.innerHTML = '';
     const firstDay = new Date(viewYear, viewMonth, 1).getDay();
@@ -573,7 +681,19 @@
     }
 
     renderSummaryAndList();
+    renderYearSummary();
     renderTrendChart();
+  }
+
+  function renderYearSummary() {
+    const yearPrefix = viewYear + '-';
+    const rate = state.rate || 0;
+    let yearTotal = 0;
+    Object.keys(state.entries).forEach(function(k) {
+      if (k.indexOf(yearPrefix) === 0) yearTotal += entryIncome(state.entries[k], rate);
+    });
+    yearLabel.textContent = viewYear;
+    yearIncomeVal.textContent = fmtMoney(yearTotal);
   }
 
   function renderSummaryAndList() {
@@ -592,7 +712,6 @@
     });
 
     sumDays.textContent = monthEntries.length;
-    sumTimes.textContent = roundNum(totalTimes);
     sumIncome.textContent = fmtMoney(totalIncome);
 
     entryList.innerHTML = '';
