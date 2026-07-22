@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Calendar & Income Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f5fb;
+    --card-bg: #ffffff;
+    --text: #2b2438;
+    --muted: #8a8296;
+    --accent: #a855c7;
+    --accent-2: #f472b6;
+    --accent-light: #f3e8fb;
+    --border: #e7e1f0;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 20px 14px 40px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  h1 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 4px 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(80, 40, 100, 0.04);
+  }
+
+  .rate-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rate-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .rate-input-group { display: flex; align-items: center; gap: 6px; }
+  .rate-input-group input {
+    width: 100px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+  .rate-input-group span { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .editing-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .editing-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .date-input-group { display: flex; align-items: center; gap: 6px; }
+  .date-input-group input[type="date"] {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    background: #fbfaff;
+  }
+  .today-chip {
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .mode-tabs {
+    display: flex;
+    background: #f3f1f8;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .mode-tabs button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 9px 6px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .mode-tabs button.active {
+    background: var(--card-bg);
+    color: var(--accent);
+    box-shadow: 0 1px 3px rgba(80,40,100,0.12);
+  }
+  .mode-tabs button.active.fixed-active { color: var(--blue); }
+
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  .panel-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+  .panel-buttons button {
+    flex: 1;
+    min-width: 64px;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: #fbfaff;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .panel-buttons button.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: white;
+  }
+  .custom-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .custom-row input {
+    width: 80px;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+    font-weight: 700;
+  }
+  .custom-row input.fixed-input { width: 120px; }
+  .custom-row button {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .custom-row button.fixed-set-btn { background: var(--blue); }
+
+  .clear-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    color: #dc2626;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .month-nav button {
+    background: var(--accent-light);
+    border: none;
+    color: var(--accent);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .month-nav button:active { transform: scale(0.94); }
+  .month-title { font-size: 16px; font-weight: 700; }
+
+  .weekdays, .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  .weekdays { margin-bottom: 6px; }
+  .weekdays div {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .day-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: #fbfaff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px;
+    transition: all 0.12s;
+  }
+  .day-cell.empty { visibility: hidden; cursor: default; }
+  .day-cell .dnum { font-weight: 600; }
+  .day-cell.worked { background: var(--green-light); border-color: #86efac; }
+  .day-cell.worked .dnum { color: #15803d; }
+  .day-cell.worked.fixed-mode { background: var(--blue-light); border-color: #93c5fd; }
+  .day-cell.worked.fixed-mode .dnum { color: #1d4ed8; }
+  .day-cell .times-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #16a34a;
+    margin-top: 1px;
+  }
+  .day-cell.fixed-mode .times-badge { color: #2563eb; }
+  .day-cell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .day-cell.today .dnum { text-decoration: underline; text-decoration-color: var(--accent-2); text-decoration-thickness: 2px; }
+
+  .legend-row { display: flex; gap: 14px; font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .summary-item {
+    background: var(--accent-light);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .summary-item .val { font-size: 17px; font-weight: 800; color: var(--accent); }
+  .summary-item.income .val { color: #16a34a; }
+  .summary-item.income { background: var(--green-light); }
+  .summary-item .lbl { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+  .list-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--muted); }
+  .entry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-date { font-weight: 600; }
+  .entry-times { color: var(--muted); font-size: 12px; }
+  .entry-times.fixed-tag { color: var(--blue); }
+  .entry-income { font-weight: 700; color: #16a34a; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13px; padding: 12px 0; }
+
+  .chart-wrap { position: relative; height: 160px; }
+  canvas { max-width: 100%; }
+
+  footer { text-align: center; color: var(--muted); font-size: 11px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗓️ Work Calendar & Income Tracker</h1>
+  <div class="subtitle">Set your rate, log each day by times worked or a fixed amount — income totals calculate automatically.</div>
+
+  <div class="card">
+    <div class="rate-row">
+      <div class="rate-label">Rate per 1 time</div>
+      <div class="rate-input-group">
+        <input type="number" id="rateInput" min="0" step="1" placeholder="0" />
+        <span>฿</span>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="editing-row">
+      <div class="editing-label">Editing:</div>
+      <div class="date-input-group">
+        <input type="date" id="dateInput" />
+        <button class="today-chip" id="todayChip">Today</button>
+      </div>
+    </div>
+
+    <div class="mode-tabs">
+      <button id="tabTimes" class="active">Pay by times</button>
+      <button id="tabFixed">Fixed amount</button>
+    </div>
+
+    <div class="mode-panel active" id="panelTimes">
+      <div class="panel-buttons">
+        <button data-times="2">2 times</button>
+        <button data-times="3">3 times</button>
+        <button data-times="4">4 times</button>
+      </div>
+      <div class="custom-row">
+        <input type="number" id="customTimes" min="0" step="1" placeholder="Custom #" />
+        <button id="customApply">Set</button>
+      </div>
+    </div>
+
+    <div class="mode-panel" id="panelFixed">
+      <div class="custom-row">
+        <input type="number" id="fixedAmount" min="0" step="1" class="fixed-input" placeholder="e.g. 500" />
+        <span style="font-size:13px; color:var(--muted); font-weight:600;">฿</span>
+        <button id="fixedApply" class="fixed-set-btn">Set</button>
+      </div>
+    </div>
+
+    <button class="clear-btn" id="clearDay">Clear this day</button>
+  </div>
+
+  <div class="card">
+    <div class="month-nav">
+      <button id="prevBtn">‹</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button id="nextBtn">›</button>
+    </div>
+    <div class="weekdays">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="days-grid" id="daysGrid"></div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#16a34a;"></span>By times × rate</span>
+      <span><span class="legend-dot" style="background:#2563eb;"></span>Fixed amount</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="val" id="sumDays">0</div>
+        <div class="lbl">Days Worked</div>
+      </div>
+      <div class="summary-item">
+        <div class="val" id="sumTimes">0</div>
+        <div class="lbl">Total Times</div>
+      </div>
+      <div class="summary-item income">
+        <div class="val" id="sumIncome">฿0</div>
+        <div class="lbl">Month Income</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="list-title">This Month's Entries</div>
+    <div id="entryList"></div>
+  </div>
+
+  <div class="card">
+    <div class="list-title">Last 6 Months — Income Trend</div>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <footer>Data is saved automatically on this device.</footer>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'work-calendar-tracker-v1';
+  const today = new Date();
+  let state = loadState();
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-indexed
+  let selectedDate = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+  let activeMode = 'times';
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.entries) {
+          Object.keys(parsed.entries).forEach(function(k) {
+            const v = parsed.entries[k];
+            if (typeof v === 'number') {
+              parsed.entries[k] = { mode: 'times', times: v };
+            }
+          });
+        }
+        return parsed;
+      }
+    } catch (e) {}
+    return { rate: 0, entries: {} }; // entries: { "YYYY-MM-DD": {mode:'times', times:n} | {mode:'fixed', amount:n} }
+  }
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function dateKey(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+  function fmtMoney(n) {
+    return '฿' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+  function entryIncome(entry, rate) {
+    if (!entry) return 0;
+    if (entry.mode === 'fixed') return entry.amount || 0;
+    return (entry.times || 0) * (rate || 0);
+  }
+
+  const rateInput = document.getElementById('rateInput');
+  const dateInput = document.getElementById('dateInput');
+  const todayChip = document.getElementById('todayChip');
+  const tabTimes = document.getElementById('tabTimes');
+  const tabFixed = document.getElementById('tabFixed');
+  const panelTimes = document.getElementById('panelTimes');
+  const panelFixed = document.getElementById('panelFixed');
+  const monthTitle = document.getElementById('monthTitle');
+  const daysGrid = document.getElementById('daysGrid');
+  const customTimes = document.getElementById('customTimes');
+  const fixedAmount = document.getElementById('fixedAmount');
+  const entryList = document.getElementById('entryList');
+  const sumDays = document.getElementById('sumDays');
+  const sumTimes = document.getElementById('sumTimes');
+  const sumIncome = document.getElementById('sumIncome');
+
+  rateInput.value = state.rate || '';
+  rateInput.addEventListener('input', function() {
+    state.rate = parseFloat(rateInput.value) || 0;
+    saveState();
+    renderAll();
+  });
+
+  dateInput.addEventListener('change', function() {
+    if (!dateInput.value) return;
+    selectedDate = dateInput.value;
+    const parts = selectedDate.split('-');
+    viewYear = parseInt(parts[0], 10);
+    viewMonth = parseInt(parts[1], 10) - 1;
+    renderAll();
+  });
+
+  todayChip.addEventListener('click', function() {
+    selectedDate = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    renderAll();
+  });
+
+  tabTimes.addEventListener('click', function() { activeMode = 'times'; renderEditor(); });
+  tabFixed.addEventListener('click', function() { activeMode = 'fixed'; renderEditor(); });
+
+  document.getElementById('prevBtn').addEventListener('click', function() {
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('nextBtn').addEventListener('click', function() {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  document.querySelectorAll('.panel-buttons button[data-times]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const t = parseInt(btn.getAttribute('data-times'), 10);
+      state.entries[selectedDate] = { mode: 'times', times: t };
+      saveState();
+      renderAll();
+    });
+  });
+  document.getElementById('customApply').addEventListener('click', function() {
+    const v = parseInt(customTimes.value, 10);
+    if (!isNaN(v) && v > 0) {
+      state.entries[selectedDate] = { mode: 'times', times: v };
+      saveState();
+      customTimes.value = '';
+      renderAll();
+    }
+  });
+  document.getElementById('fixedApply').addEventListener('click', function() {
+    const v = parseFloat(fixedAmount.value);
+    if (!isNaN(v) && v > 0) {
+      state.entries[selectedDate] = { mode: 'fixed', amount: v };
+      saveState();
+      renderAll();
+    }
+  });
+  document.getElementById('clearDay').addEventListener('click', function() {
+    delete state.entries[selectedDate];
+    saveState();
+    fixedAmount.value = '';
+    customTimes.value = '';
+    renderAll();
+  });
+
+  function selectDay(key) {
+    selectedDate = key;
+    renderAll();
+  }
+
+  function renderEditor() {
+    dateInput.value = selectedDate;
+
+    const entry = state.entries[selectedDate];
+    if (entry) activeMode = entry.mode;
+
+    tabTimes.classList.toggle('active', activeMode === 'times');
+    tabFixed.classList.toggle('active', activeMode === 'fixed');
+    tabFixed.classList.toggle('fixed-active', activeMode === 'fixed');
+    panelTimes.classList.toggle('active', activeMode === 'times');
+    panelFixed.classList.toggle('active', activeMode === 'fixed');
+
+    document.querySelectorAll('.panel-buttons button[data-times]').forEach(function(btn) {
+      const isActive = entry && entry.mode === 'times' && parseInt(btn.getAttribute('data-times'), 10) === entry.times;
+      btn.classList.toggle('active', isActive);
+    });
+    fixedAmount.value = (entry && entry.mode === 'fixed') ? entry.amount : '';
+    customTimes.value = '';
+  }
+
+  function renderCalendar() {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    monthTitle.textContent = monthNames[viewMonth] + ' ' + viewYear;
+
+    daysGrid.innerHTML = '';
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'day-cell empty';
+      daysGrid.appendChild(empty);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = dateKey(viewYear, viewMonth, d);
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      const isToday = (viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate());
+      if (isToday) cell.classList.add('today');
+      if (key === selectedDate) cell.classList.add('selected');
+
+      const entry = state.entries[key];
+      let html = '<div class="dnum">' + d + '</div>';
+      if (entry) {
+        cell.classList.add('worked');
+        if (entry.mode === 'fixed') {
+          cell.classList.add('fixed-mode');
+          html += '<div class="times-badge">฿' + entry.amount + '</div>';
+        } else {
+          html += '<div class="times-badge">x' + entry.times + '</div>';
+        }
+      }
+      cell.innerHTML = html;
+      cell.addEventListener('click', function() { selectDay(key); });
+      daysGrid.appendChild(cell);
+    }
+
+    renderSummaryAndList();
+    renderTrendChart();
+  }
+
+  function renderSummaryAndList() {
+    const prefix = viewYear + '-' + pad(viewMonth + 1);
+    const monthEntries = Object.keys(state.entries)
+      .filter(function(k) { return k.indexOf(prefix) === 0; })
+      .sort();
+
+    const rate = state.rate || 0;
+    let totalTimes = 0;
+    let totalIncome = 0;
+    monthEntries.forEach(function(k) {
+      const e = state.entries[k];
+      if (e.mode === 'times') totalTimes += e.times;
+      totalIncome += entryIncome(e, rate);
+    });
+
+    sumDays.textContent = monthEntries.length;
+    sumTimes.textContent = totalTimes;
+    sumIncome.textContent = fmtMoney(totalIncome);
+
+    entryList.innerHTML = '';
+    if (monthEntries.length === 0) {
+      entryList.innerHTML = '<div class="empty-note">No work days logged this month yet.</div>';
+    } else {
+      monthEntries.forEach(function(k) {
+        const e = state.entries[k];
+        const income = entryIncome(e, rate);
+        const d = new Date(k + 'T00:00:00');
+        const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const tagText = e.mode === 'fixed' ? 'Fixed day' : (e.times + ' times');
+        const tagClass = e.mode === 'fixed' ? 'entry-times fixed-tag' : 'entry-times';
+        const row = document.createElement('div');
+        row.className = 'entry-row';
+        row.innerHTML = '<div><div class="entry-date">' + label + '</div><div class="' + tagClass + '">' + tagText + '</div></div>' +
+                         '<div class="entry-income">' + fmtMoney(income) + '</div>';
+        entryList.appendChild(row);
+      });
+    }
+  }
+
+  let trendChartInstance = null;
+  function renderTrendChart() {
+    const rate = state.rate || 0;
+    const labels = [];
+    const data = [];
+    const monthNamesShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for (let i = 5; i >= 0; i--) {
+      let y = viewYear, m = viewMonth - i;
+      while (m < 0) { m += 12; y--; }
+      const prefix = y + '-' + pad(m + 1);
+      let total = 0;
+      Object.keys(state.entries).forEach(function(k) {
+        if (k.indexOf(prefix) === 0) total += entryIncome(state.entries[k], rate);
+      });
+      labels.push(monthNamesShort[m] + " '" + String(y).slice(2));
+      data.push(total);
+    }
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if (trendChartInstance) trendChartInstance.destroy();
+    trendChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Income',
+          data: data,
+          backgroundColor: '#a855c7',
+          borderRadius: 6,
+          maxBarThickness: 34
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: function(v) { return '฿' + v; } } }
+        }
+      }
+    });
+  }
+
+  function renderAll() {
+    renderEditor();
+    renderCalendar();
+  }
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
