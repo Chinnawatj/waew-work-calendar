@@ -318,6 +318,10 @@
   .summary-item .val { font-size: 17px; font-weight: 800; color: var(--accent); }
   .summary-item.income .val { color: #16a34a; }
   .summary-item.income { background: var(--green-light); }
+  .summary-item.times-income .val { color: #16a34a; }
+  .summary-item.times-income { background: #eefcf1; }
+  .summary-item.fixed-income .val { color: var(--blue); }
+  .summary-item.fixed-income { background: var(--blue-light); }
   .summary-item .lbl { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
 
   .year-income-row {
@@ -435,6 +439,14 @@
         <div class="val" id="sumIncome">฿0</div>
         <div class="lbl">Month Income</div>
       </div>
+      <div class="summary-item times-income">
+        <div class="val" id="sumTimesIncome">฿0</div>
+        <div class="lbl">By Times</div>
+      </div>
+      <div class="summary-item fixed-income">
+        <div class="val" id="sumFixedIncome">฿0</div>
+        <div class="lbl">Fixed Amount</div>
+      </div>
     </div>
     <div class="year-income-row">
       <span class="year-income-label">Total income in <span id="yearLabel"></span></span>
@@ -518,6 +530,8 @@
   const entryList = document.getElementById('entryList');
   const sumDays = document.getElementById('sumDays');
   const sumIncome = document.getElementById('sumIncome');
+  const sumTimesIncome = document.getElementById('sumTimesIncome');
+  const sumFixedIncome = document.getElementById('sumFixedIncome');
   const yearLabel = document.getElementById('yearLabel');
   const yearIncomeVal = document.getElementById('yearIncomeVal');
 
@@ -705,14 +719,24 @@
     const rate = state.rate || 0;
     let totalTimes = 0;
     let totalIncome = 0;
+    let timesIncome = 0;
+    let fixedIncome = 0;
     monthEntries.forEach(function(k) {
       const e = state.entries[k];
-      if (e.mode === 'times') totalTimes += e.times;
-      totalIncome += entryIncome(e, rate);
+      const inc = entryIncome(e, rate);
+      if (e.mode === 'times') {
+        totalTimes += e.times;
+        timesIncome += inc;
+      } else {
+        fixedIncome += inc;
+      }
+      totalIncome += inc;
     });
 
     sumDays.textContent = monthEntries.length;
     sumIncome.textContent = fmtMoney(totalIncome);
+    sumTimesIncome.textContent = fmtMoney(timesIncome);
+    sumFixedIncome.textContent = fmtMoney(fixedIncome);
 
     entryList.innerHTML = '';
     if (monthEntries.length === 0) {
@@ -752,7 +776,23 @@
       labels.push(monthNamesShort[m] + " '" + String(y).slice(2));
       data.push(total);
     }
-    const ctx = document.getElementById('trendChart').getContext('2d');
+    const canvasEl = document.getElementById('trendChart');
+    if (typeof Chart === 'undefined') {
+      canvasEl.style.display = 'none';
+      const wrap = canvasEl.parentElement;
+      if (!document.getElementById('chartFallbackMsg')) {
+        const msg = document.createElement('div');
+        msg.id = 'chartFallbackMsg';
+        msg.className = 'empty-note';
+        msg.textContent = 'Chart needs an internet connection to load.';
+        wrap.appendChild(msg);
+      }
+      return;
+    }
+    const existingMsg = document.getElementById('chartFallbackMsg');
+    if (existingMsg) existingMsg.remove();
+    canvasEl.style.display = '';
+    const ctx = canvasEl.getContext('2d');
     if (trendChartInstance) trendChartInstance.destroy();
     trendChartInstance = new Chart(ctx, {
       type: 'bar',
