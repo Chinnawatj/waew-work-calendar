@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Work Calendar & Income Tracker</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Work Calendar">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE9ElEQVR4nO3dvXEkVRSA0TcqEphNYE2KwsHEwMDAIgCIgSw2C2KAALAwMDAwcSgKkwQ0ISzG1ohZaaanf15333t1jrW1Uj1NdX+6emp1S4e2s+Px+H7v10A/p9PpsOfH3/yDC/h12TrwTT6YiGltm7hX/QBC5po1w15lYSEzxhphd11QyMzRM+wuCwmZHnqE/bB0ATHTS4+WFgUtZnpb2tSsES9ktjBnCzJ5QouZrcxpbVLQYmZrU5sbHbSY2cuU9kYFLWb2NrbBxZftIJK7QZvORDGmxcGgxUw095q8GbSYiWqoTXtoSrkatOlMdLcaNaEp5UXQpjNZXGvVhKaUj4I2ncnmebMmNKU8BW06k9VluyY0pQiaUh5as90gv3PDJjSlfLL3C1jD37//+/Tvz756u+Mriany8Tm0VmfLcXminqt24uaofnxOp9PhoUrMcDwe35fZQw9NnzFvr+61HJ8yQUNrgqYYQVOKoClF0JQiaEoRNKUImlIETSmCppQ0d9v9+M0vIdao7N7x+eHXbzd6JfOFD1qEcZzPReSwQ285xBxT5PMSckJHPmB8EHVah57QMFW4oE3nXKKdr1BBRzs4jBPpvIUKGpYKE/TSz/Lf3v216O3VrX18okzpMEFDDyEv2811njJfv/v8xf/xOo5PqaDPqp2k3iofH1sOShE0pQiaUgRNKYKmFEFTiqApRdCUImhKETSlCJpSDlH+JMXj4+PeL4GF3rx5s/dLMKGpRdCUImhKETSlCJpSBE0pgqYUQVOKoClF0JSS+tcY/PPntD+4/ukXb629YO0MUt7LMfWkPTd0Eq09n3s5oLN0QS+dRENrWDu/dEHDEEFTiqApRdCUImhKETSlCJpSBE0p6YLu8SPaW2tYO790QcOQlDcnnWW9ay3r2vdEuDkpddDEEiFoWw5KETSlCJpSBE0pgqYUQVOKp75v+Om7Pyat/f3PX45+36rXoSNIeR16zSecp4b83FDYnvpeny0HpaQLes0nnJdO56E1PPW9jXRBwxBBU4qgKUXQlCJoShE0pQiaUgRNKemCXvMJ5yn3Y9xyaw1PfW8jXdAwJOXNSWfuttt27Xsi3JyUOmhiiRC0LQelCJpSBE0pgqYUQVOKoCnFU9/WnvT+0aW8Dp316emsa4/lOjR0li7orE9PZ107m3RBwxBBU4qgKUXQlCJoShE0pQiaUgRNKemCzvr0dNa1s0kXNAxJeXPSWda71rKufU+Em5NSB00sEYK25aAUQVNKmKAjfLlivijnL0zQ0IOgKSVU0FG+bDFNpPMWKujWYh0c7ot2vsIFDUuEDDraZz3XRTxPIYNuLebB4n9Rz8+htdai/Pj7Fj8WjyNqyK21djqdDmEn9KXIB/E1yXAe0vxuu8uDaWJvJ0PEl9IEfSnbQWY7D6192Hvs/UJgiXPDKfbQMJagKeUpaNsOsrps14SmlI+CNqXJ5nmzJjSlvAjalCaLa62a0JRyNWhTmuhuNWpCU8rNoE1pohpqc3BCi5po7jV5d8shaqIY06I9NKWMCtqUZm9jGxw9oUXNXqa0N2nLIWq2NrW5yXtoUbOVOa0tijP6rz8gpyVDc9FVDtOa3pY2tfiynajppUdLXWO0BWGOnkNxlekqbMZY46v7qtsFYXPNmtvUTfa/wqa1bb7f2vwbOnG/LltfNNj9CoXAa9n7qtd/kDznIwSPA+AAAAAASUVORK5CYII=" />
+<link rel="icon" type="image/png" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE9ElEQVR4nO3dvXEkVRSA0TcqEphNYE2KwsHEwMDAIgCIgSw2C2KAALAwMDAwcSgKkwQ0ISzG1ohZaaanf15333t1jrW1Uj1NdX+6emp1S4e2s+Px+H7v10A/p9PpsOfH3/yDC/h12TrwTT6YiGltm7hX/QBC5po1w15lYSEzxhphd11QyMzRM+wuCwmZHnqE/bB0ATHTS4+WFgUtZnpb2tSsES9ktjBnCzJ5QouZrcxpbVLQYmZrU5sbHbSY2cuU9kYFLWb2NrbBxZftIJK7QZvORDGmxcGgxUw095q8GbSYiWqoTXtoSrkatOlMdLcaNaEp5UXQpjNZXGvVhKaUj4I2ncnmebMmNKU8BW06k9VluyY0pQiaUh5as90gv3PDJjSlfLL3C1jD37//+/Tvz756u+Mriany8Tm0VmfLcXminqt24uaofnxOp9PhoUrMcDwe35fZQw9NnzFvr+61HJ8yQUNrgqYYQVOKoClF0JQiaEoRNKUImlIETSmCppQ0d9v9+M0vIdao7N7x+eHXbzd6JfOFD1qEcZzPReSwQ285xBxT5PMSckJHPmB8EHVah57QMFW4oE3nXKKdr1BBRzs4jBPpvIUKGpYKE/TSz/Lf3v216O3VrX18okzpMEFDDyEv2811njJfv/v8xf/xOo5PqaDPqp2k3iofH1sOShE0pQiaUgRNKYKmFEFTiqApRdCUImhKETSlCJpSDlH+JMXj4+PeL4GF3rx5s/dLMKGpRdCUImhKETSlCJpSBE0pgqYUQVOKoClF0JSS+tcY/PPntD+4/ukXb629YO0MUt7LMfWkPTd0Eq09n3s5oLN0QS+dRENrWDu/dEHDEEFTiqApRdCUImhKETSlCJpSBE0p6YLu8SPaW2tYO790QcOQlDcnnWW9ay3r2vdEuDkpddDEEiFoWw5KETSlCJpSBE0pgqYUQVOKp75v+Om7Pyat/f3PX45+36rXoSNIeR16zSecp4b83FDYnvpeny0HpaQLes0nnJdO56E1PPW9jXRBwxBBU4qgKUXQlCJoShE0pQiaUgRNKemCXvMJ5yn3Y9xyaw1PfW8jXdAwJOXNSWfuttt27Xsi3JyUOmhiiRC0LQelCJpSBE0pgqYUQVOKoCnFU9/WnvT+0aW8Dp316emsa4/lOjR0li7orE9PZ107m3RBwxBBU4qgKUXQlCJoShE0pQiaUgRNKemCzvr0dNa1s0kXNAxJeXPSWda71rKufU+Em5NSB00sEYK25aAUQVNKmKAjfLlivijnL0zQ0IOgKSVU0FG+bDFNpPMWKujWYh0c7ot2vsIFDUuEDDraZz3XRTxPIYNuLebB4n9Rz8+htdai/Pj7Fj8WjyNqyK21djqdDmEn9KXIB/E1yXAe0vxuu8uDaWJvJ0PEl9IEfSnbQWY7D6192Hvs/UJgiXPDKfbQMJagKeUpaNsOsrps14SmlI+CNqXJ5nmzJjSlvAjalCaLa62a0JRyNWhTmuhuNWpCU8rNoE1pohpqc3BCi5po7jV5d8shaqIY06I9NKWMCtqUZm9jGxw9oUXNXqa0N2nLIWq2NrW5yXtoUbOVOa0tijP6rz8gpyVDc9FVDtOa3pY2tfiynajppUdLXWO0BWGOnkNxlekqbMZY46v7qtsFYXPNmtvUTfa/wqa1bb7f2vwbOnG/LltfNNj9CoXAa9n7qtd/kDznIwSPA+AAAAAASUVORK5CYII=" />
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
   :root {
@@ -512,7 +519,34 @@
         return parsed;
       }
     } catch (e) {}
-    return { rate: 0, entries: {} }; // entries: { "YYYY-MM-DD": {mode:'times', times:n} | {mode:'fixed', amount:n} }
+    return {
+      rate: 230,
+      entries: {
+        '2026-07-01': { mode: 'times', times: 7.5, rate: 230 },
+        '2026-07-02': { mode: 'fixed', amount: 2400 },
+        '2026-07-03': { mode: 'times', times: 12, rate: 230 },
+        '2026-07-04': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-06': { mode: 'times', times: 17.5, rate: 230 },
+        '2026-07-07': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-08': { mode: 'times', times: 15, rate: 230 },
+        '2026-07-09': { mode: 'fixed', amount: 2400 },
+        '2026-07-10': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-13': { mode: 'times', times: 17.5, rate: 230 },
+        '2026-07-14': { mode: 'fixed', amount: 2400 },
+        '2026-07-15': { mode: 'times', times: 8, rate: 230 },
+        '2026-07-16': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-17': { mode: 'times', times: 11.5, rate: 230 },
+        '2026-07-18': { mode: 'times', times: 14, rate: 230 },
+        '2026-07-20': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-21': { mode: 'times', times: 13, rate: 230 },
+        '2026-07-22': { mode: 'fixed', amount: 2400 },
+        '2026-07-23': { mode: 'fixed', amount: 1600 },
+        '2026-07-24': { mode: 'times', times: 16, rate: 230 },
+        '2026-07-27': { mode: 'times', times: 14, rate: 230 },
+        '2026-07-30': { mode: 'times', times: 12, rate: 230 },
+        '2026-07-31': { mode: 'times', times: 13, rate: 230 }
+      }
+    }; // entries: { "YYYY-MM-DD": {mode:'times', times:n} | {mode:'fixed', amount:n} }
   }
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
